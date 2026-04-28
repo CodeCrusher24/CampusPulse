@@ -1,7 +1,5 @@
 # ===============================
-
 # Build / Output
-
 # ===============================
 
 target/
@@ -9,49 +7,39 @@ build/
 out/
 
 # Compiled files
-
 *.class
 *.jar
 *.war
 *.ear
 
 # ===============================
-
 # Logs
-
 # ===============================
 
 *.log
 logs/
 
 # ===============================
-
 # OS files
-
 # ===============================
 
 .DS_Store
 Thumbs.db
 
 # ===============================
-
 # IDE files
-
 # ===============================
 
 ## IntelliJ
-
 .idea/
 *.iws
 *.iml
 *.ipr
 
 ## VS Code
-
 .vscode/
 
 ## Eclipse / STS
-
 .apt_generated
 .classpath
 .factorypath
@@ -61,7 +49,6 @@ Thumbs.db
 .sts4-cache
 
 ## NetBeans
-
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -69,35 +56,35 @@ Thumbs.db
 /.nb-gradle/
 
 # ===============================
-
-# Environment / Sensitive files
-
+# Node / Frontend
 # ===============================
 
-# Ignore ALL real config files (anywhere in project)
+node_modules/
+dist/
+coverage/
+.env
+.env.local
+.env.*.local
 
-**/application.properties
+# ===============================
+# Environment / Sensitive files
+# ===============================
 
-# Ignore profile-specific configs
-
+# Ignore real config (secrets, DB creds, etc.)
+application.properties
 application-*.properties
 
-# Allow template config file
-
-!**/application-example.properties
+# Allow example config
+!application-example.properties
 
 # ===============================
-
 # Maven
-
 # ===============================
 
 .mvn/wrapper/maven-wrapper.jar
 
 # ===============================
-
 # Misc
-
 # ===============================
 
 *.tmp
@@ -105,9 +92,7 @@ application-*.properties
 *.swo
 
 # ===============================
-
 # Test outputs
-
 # ===============================
 
 /test-output/
