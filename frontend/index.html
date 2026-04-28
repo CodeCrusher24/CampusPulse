@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CampusPulse — SMVDU</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════════════════ -->
+<div id="auth-screen" class="screen active">
+  <div class="auth-bg">
+    <div class="auth-blob b1"></div>
+    <div class="auth-blob b2"></div>
+    <div class="auth-blob b3"></div>
+  </div>
+  <div class="auth-card">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">CampusPulse</span>
+      <span class="brand-sub">SMVDU Event System</span>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="login-form" class="auth-form active-form">
+      <h2>Sign In</h2>
+      <p class="auth-hint">Use your <code>@smvdu.ac.in</code> credentials</p>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="23bcs060@smvdu.ac.in"/>
+      </div>
+      <div class="field">
+  <label>Password</label>
+  <div class="password-wrapper">
+    <input type="password" id="login-password" placeholder="Your password"/>
+    <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)">👁</button>
+  </div>
+</div>
+      <div id="login-error" class="form-error hidden"></div>
+      <button class="btn-primary" onclick="doLogin()">Sign In</button>
+      <p class="auth-switch">First time? <a href="#" onclick="showChangePassword()">Set your password</a></p>
+    </div>
+
+    <!-- CHANGE PASSWORD FORM -->
+    <div id="change-password-form" class="auth-form">
+      <h2>Set Password</h2>
+      <p class="auth-hint">Default password is the part before <code>@</code> in your email</p>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="cp-email" placeholder="23bcs060@smvdu.ac.in"/>
+      </div>
+      <div class="field">
+  <label>Current / Default Password</label>
+  <div class="password-wrapper">
+    <input type="password" id="cp-old" placeholder="e.g. 23bcs060"/>
+    <button type="button" class="toggle-password" onclick="togglePassword('cp-old', this)">👁</button>
+  </div>
+</div>
+      <div class="field">
+  <label>New Password</label>
+  <div class="password-wrapper">
+    <input type="password" id="cp-new" placeholder="Min 8 chars, upper+lower+digit+special"/>
+    <button type="button" class="toggle-password" onclick="togglePassword('cp-new', this)">👁</button>
+  </div>
+</div>
+      <div id="cp-error" class="form-error hidden"></div>
+      <div id="cp-success" class="form-success hidden"></div>
+      <button class="btn-primary" onclick="doChangePassword()">Update Password</button>
+      <p class="auth-switch"><a href="#" onclick="showLogin()">← Back to Sign In</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════════════ -->
+<div id="app-screen" class="screen">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-dot sm"></span>
+      <span>CampusPulse</span>
+    </div>
+
+    <nav id="sidebar-nav">
+      <!-- populated by JS based on role -->
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <div class="user-info">
+          <span id="user-email-display" class="user-email">user@smvdu.ac.in</span>
+          <span id="user-role-display" class="user-role">STUDENT</span>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main id="main-content">
+
+    <!-- ── PUBLISHED EVENTS (Students + all) ── -->
+    <section id="view-events" class="view">
+      <div class="view-header">
+        <h1>Upcoming Events</h1>
+        <div class="header-actions">
+          <div class="search-box">
+            <input type="text" id="events-search" placeholder="Search events…" oninput="filterPublishedEvents()"/>
+          </div>
+        </div>
+      </div>
+      <div id="events-grid" class="events-grid">
+        <div class="loading-spinner">Loading events…</div>
+      </div>
+      <div id="events-pagination" class="pagination"></div>
+    </section>
+
+    <!-- ── MY EVENTS (Coordinator) ── -->
+    <section id="view-my-events" class="view">
+      <div class="view-header">
+        <h1>My Events</h1>
+        <button class="btn-primary" onclick="openCreateEvent()">+ New Event</button>
+      </div>
+      <div id="my-events-list" class="events-list">
+        <div class="loading-spinner">Loading…</div>
+      </div>
+      <div id="my-events-pagination" class="pagination"></div>
+    </section>
+
+    <!-- ── ALL EVENTS (Admin / Faculty) ── -->
+    <section id="view-all-events" class="view">
+      <div class="view-header">
+        <h1>All Events</h1>
+        <button class="btn-primary" id="all-events-create-btn" onclick="openCreateEvent()" style="display:none">+ New Event</button>
+      </div>
+      <div id="all-events-list" class="events-list">
+        <div class="loading-spinner">Loading…</div>
+      </div>
+      <div id="all-events-pagination" class="pagination"></div>
+    </section>
+
+    <!-- ── PENDING APPROVALS (Faculty / Admin) ── -->
+    <section id="view-pending" class="view">
+      <div class="view-header">
+        <h1>Pending Approvals</h1>
+      </div>
+      <div id="pending-list" class="events-list">
+        <div class="loading-spinner">Loading…</div>
+      </div>
+    </section>
+
+    <!-- ── ADMIN: USER MANAGEMENT ── -->
+    <section id="view-users" class="view">
+      <div class="view-header">
+        <h1>User Management</h1>
+        <div class="header-actions">
+          <button class="btn-secondary" onclick="openCreateUserModal()">+ Add User</button>
+          <button class="btn-secondary" onclick="openBulkImportModal()">⬆ Bulk Import</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="users-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Must Change Pwd</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="5" class="loading-spinner">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="users-pagination" class="pagination"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════ -->
+
+<!-- Event Detail Modal -->
+<div id="modal-event-detail" class="modal-overlay hidden">
+  <div class="modal large">
+    <div class="modal-header">
+      <h2 id="detail-title">Event Title</h2>
+      <button class="modal-close" onclick="closeModal('modal-event-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-footer" id="detail-footer"></div>
+  </div>
+</div>
+
+<!-- Create / Edit Event Modal -->
+<div id="modal-event-form" class="modal-overlay hidden">
+  <div class="modal large">
+    <div class="modal-header">
+      <h2 id="event-form-title">Create Event</h2>
+      <button class="modal-close" onclick="closeModal('modal-event-form')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="event-form" onsubmit="return false">
+        <input type="hidden" id="ef-id"/>
+        <div class="form-grid">
+          <div class="field span2">
+            <label>Title *</label>
+            <input type="text" id="ef-title" placeholder="Event title" required/>
+          </div>
+          <div class="field span2">
+            <label>Description *</label>
+            <textarea id="ef-description" rows="3" placeholder="Describe the event…" required></textarea>
+          </div>
+          <div class="field">
+            <label>Event Date & Time *</label>
+            <input type="datetime-local" id="ef-datetime" required/>
+          </div>
+          <div class="field">
+            <label>Registration Deadline</label>
+            <input type="datetime-local" id="ef-deadline"/>
+          </div>
+          <div class="field">
+            <label>Venue</label>
+            <select id="ef-venue">
+              <option value="">— Select a venue —</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Or Custom Location</label>
+            <input type="text" id="ef-custom-location" placeholder="e.g. Seminar Hall Block C"/>
+          </div>
+          <div class="field">
+            <label>Capacity *</label>
+            <input type="number" id="ef-capacity" placeholder="e.g. 200" min="1" required/>
+          </div>
+          <div class="field">
+            <label>Primary Category *</label>
+            <select id="ef-category1" required>
+              <option value="">— Select —</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Secondary Category</label>
+            <select id="ef-category2">
+              <option value="">— None —</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tertiary Category</label>
+            <select id="ef-category3">
+              <option value="">— None —</option>
+            </select>
+          </div>
+          <div class="field span2">
+            <label>Tags (comma separated)</label>
+            <input type="text" id="ef-tags" placeholder="hackathon, coding, tech"/>
+          </div>
+          <div class="field span2">
+            <label>Image URL</label>
+            <input type="url" id="ef-image" placeholder="https://…"/>
+          </div>
+        </div>
+        <div id="event-form-error" class="form-error hidden"></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-event-form')">Cancel</button>
+      <button class="btn-primary" onclick="submitEventForm()">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- Approval Modal -->
+<div id="modal-approve" class="modal-overlay hidden">
+  <div class="modal small">
+    <div class="modal-header">
+      <h2 id="approve-title">Approve Event</h2>
+      <button class="modal-close" onclick="closeModal('modal-approve')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="approve-event-id"/>
+      <input type="hidden" id="approve-gate"/>
+      <p id="approve-desc"></p>
+      <div class="field" id="remarks-field">
+        <label>Remarks (required on rejection)</label>
+        <textarea id="approve-remarks" rows="3" placeholder="Optional remarks…"></textarea>
+      </div>
+      <div id="approve-error" class="form-error hidden"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-danger" onclick="submitApproval(false)">✕ Reject</button>
+      <button class="btn-primary" onclick="submitApproval(true)">✓ Approve</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<div id="modal-create-user" class="modal-overlay hidden">
+  <div class="modal small">
+    <div class="modal-header">
+      <h2>Add User</h2>
+      <button class="modal-close" onclick="closeModal('modal-create-user')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Email *</label>
+        <input type="email" id="new-user-email" placeholder="user@smvdu.ac.in"/>
+      </div>
+      <div class="field">
+        <label>Account Type</label>
+        <select id="new-user-type">
+          <option value="user">User (auto-detect role)</option>
+          <option value="admin">System Admin</option>
+        </select>
+      </div>
+      <div id="create-user-error" class="form-error hidden"></div>
+      <div id="create-user-success" class="form-success hidden"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-create-user')">Cancel</button>
+      <button class="btn-primary" onclick="submitCreateUser()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Import Modal -->
+<div id="modal-bulk-import" class="modal-overlay hidden">
+  <div class="modal small">
+    <div class="modal-header">
+      <h2>Bulk Import Users</h2>
+      <button class="modal-close" onclick="closeModal('modal-bulk-import')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="auth-hint">Upload a CSV file with one <code>@smvdu.ac.in</code> email per line.</p>
+      <div class="field">
+        <label>CSV File *</label>
+        <input type="file" id="bulk-csv-file" accept=".csv"/>
+      </div>
+      <div id="bulk-error" class="form-error hidden"></div>
+      <div id="bulk-success" class="form-success hidden"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-bulk-import')">Cancel</button>
+      <button class="btn-primary" onclick="submitBulkImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change Role Modal -->
+<div id="modal-change-role" class="modal-overlay hidden">
+  <div class="modal small">
+    <div class="modal-header">
+      <h2>Change Role</h2>
+      <button class="modal-close" onclick="closeModal('modal-change-role')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="role-user-id"/>
+      <p id="role-user-email-display" class="auth-hint"></p>
+      <div class="field">
+        <label>New Role</label>
+        <select id="new-role-select">
+          <option value="EVENT_COORDINATOR">Event Coordinator</option>
+          <option value="FACULTY_AUTHORITY">Faculty Authority</option>
+        </select>
+      </div>
+      <div id="role-error" class="form-error hidden"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-change-role')">Cancel</button>
+      <button class="btn-primary" onclick="submitRoleChange()">Update Role</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

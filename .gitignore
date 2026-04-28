@@ -1,0 +1,114 @@
+# ===============================
+
+# Build / Output
+
+# ===============================
+
+target/
+build/
+out/
+
+# Compiled files
+
+*.class
+*.jar
+*.war
+*.ear
+
+# ===============================
+
+# Logs
+
+# ===============================
+
+*.log
+logs/
+
+# ===============================
+
+# OS files
+
+# ===============================
+
+.DS_Store
+Thumbs.db
+
+# ===============================
+
+# IDE files
+
+# ===============================
+
+## IntelliJ
+
+.idea/
+*.iws
+*.iml
+*.ipr
+
+## VS Code
+
+.vscode/
+
+## Eclipse / STS
+
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+## NetBeans
+
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ===============================
+
+# Environment / Sensitive files
+
+# ===============================
+
+# Ignore ALL real config files (anywhere in project)
+
+**/application.properties
+
+# Ignore profile-specific configs
+
+application-*.properties
+
+# Allow template config file
+
+!**/application-example.properties
+
+# ===============================
+
+# Maven
+
+# ===============================
+
+.mvn/wrapper/maven-wrapper.jar
+
+# ===============================
+
+# Misc
+
+# ===============================
+
+*.tmp
+*.swp
+*.swo
+
+# ===============================
+
+# Test outputs
+
+# ===============================
+
+/test-output/
+/surefire-reports/
